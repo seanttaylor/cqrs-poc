@@ -1,0 +1,26 @@
+{
+  "name": "cqrs-poc",
+  "version": "1.0.0",
+  "description": "Messing around with CQRS and event-driven architectures",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seanttaylor/cqrs-poc.git"
+  },
+  "author": "Sean T Taylor",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/seanttaylor/cqrs-poc/issues"
+  },
+  "homepage": "https://github.com/seanttaylor/cqrs-poc#readme",
+  "dependencies": {
+    "ajv": "^8.11.0",
+    "node-fetch": "^3.2.4",
+    "rxjs": "^7.5.5"
+  }
+}
