@@ -1,7 +1,8 @@
 export default {
-    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "http://example.com/example.json",
     "type": "object",
+    "default": {},
     "title": "The event header schema",
     "required": [
         "eventType",
@@ -43,10 +44,10 @@ export default {
             "description": "A plain text name of a specific group of events",
             "items": {
                 "type": "string",
-                "enum,": [
-                    "ice_cream.created",
-                    "ice_cream.updated",
-                    "ice_cream.deleted"
+                "enum": [
+                    "create.ice_cream",
+                    "update.ice_cream",
+                    "delete.ice_cream."
                 ]
             },
             "examples": [
