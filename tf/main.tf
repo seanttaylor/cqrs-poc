@@ -61,8 +61,8 @@ resource "aws_s3_bucket_acl" "lambda_bucket" {
 data "archive_file" "lambda_hello_world" {
   type = "zip"
 
-  source_dir  = "${path.module}/lib/lambda/hello-world"
-  output_path = "${path.module}/dist/hello-world.zip"
+  source_dir  = "../lib/lambda/hello-world"
+  output_path = "../dist/hello-world.zip"
 }
 
 resource "aws_s3_object" "lambda_hello_world" {
