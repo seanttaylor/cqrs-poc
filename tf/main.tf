@@ -60,7 +60,7 @@ resource "aws_s3_bucket" "lambda_bucket" {
   bucket = "${local.app_owner}.lambda.hello-world"
 
   force_destroy = true
-  tags_all = {
+  tags = {
     "app_owner" = "${local.app_owner}"
   }
 }
