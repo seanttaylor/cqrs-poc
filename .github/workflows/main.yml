@@ -1,0 +1,22 @@
+name: CQRS-POC
+
+on: 
+  push:
+    branches:
+      - issno-* 
+      - master
+
+jobs:
+  build-and-push:
+    name: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: "[STEP] Checkout"
+        uses: actions/checkout@v2
+
+      - name: "[STEP] Set Node.js version"
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+        run: |
+          echo "GIT_SHA_SHORT=$(echo "$(git rev-parse --short "$GITHUB_SHA")")" >> $GITHUB_ENV
