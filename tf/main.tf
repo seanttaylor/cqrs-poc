@@ -44,6 +44,11 @@ variable "TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA" {
   default = ""
 }
 
+variable "TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA_SHORT" {
+  type = string
+  default = substr("${var.TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA}", -35, 0, 6)
+}
+
 ################## AWS S3 BUCKET CONFIGURATION ###################
 
 #resource "random_pet" "lambda_bucket_name" {
@@ -82,7 +87,7 @@ resource "aws_s3_object" "lambda_hello_world" {
 ################## AWS LAMBDA CONFIGURATION ###################
 
 resource "aws_lambda_function" "hello_world" {
-  function_name = "hello-world-${var.TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA}"
+  function_name = "hello-world-${var.TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA_SHORT}"
 
   s3_bucket = aws_s3_bucket.lambda_bucket.id
   s3_key    = aws_s3_object.lambda_hello_world.key
