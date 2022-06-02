@@ -46,6 +46,7 @@ variable "TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA" {
 
 locals {
   git_commit_sha = substr("${var.TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA}", -40, 6)
+  organization_handle = "com.omegalabs.platform"
 }
 
 ################## AWS S3 BUCKET CONFIGURATION ###################
@@ -56,7 +57,7 @@ locals {
 #}
 
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "hello-world"
+  bucket = "${local.organization_handle}/hello-world"
 
   force_destroy = true
 }
