@@ -82,7 +82,7 @@ resource "aws_s3_object" "lambda_hello_world" {
 ################## AWS LAMBDA CONFIGURATION ###################
 
 resource "aws_lambda_function" "hello_world" {
-  function_name = "hello-world:${var.TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA}"
+  function_name = "hello-world/${var.TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA}"
 
   s3_bucket = aws_s3_bucket.lambda_bucket.id
   s3_key    = aws_s3_object.lambda_hello_world.key
