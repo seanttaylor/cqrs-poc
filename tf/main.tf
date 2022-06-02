@@ -45,7 +45,7 @@ variable "TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA" {
 }
 
 locals {
-  git_commit_sha = substr("${var.TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA}", -35, 6)
+  git_commit_sha = substr("${var.TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA}", -40, 6)
 }
 
 ################## AWS S3 BUCKET CONFIGURATION ###################
