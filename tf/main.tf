@@ -57,7 +57,7 @@ locals {
 #}
 
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "${local.organization_handle}/hello-world"
+  bucket = "${local.organization_handle}.hello-world"
 
   force_destroy = true
 }
