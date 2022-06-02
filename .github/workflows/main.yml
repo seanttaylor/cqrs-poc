@@ -1,4 +1,4 @@
-name: CQRS-POC
+name: CQRS
 
 on: 
   push:
@@ -18,5 +18,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 16.x
+      
+      - name: "GNDN"
         run: |
           echo "GIT_SHA_SHORT=$(echo "$(git rev-parse --short "$GITHUB_SHA")")" >> $GITHUB_ENV
