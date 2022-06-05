@@ -1,0 +1,12 @@
+{
+    "name": "lambda-validate-incoming-msg-header",
+    "type": "module",
+    "description": "Validates new pipeline message headers against registered schemas",
+    "version": "0.0.1",
+    "main": "index.js",
+    "author": "Sean Travis Taylor",
+    "license": "ISC",
+    "dependencies": {
+        "ajv": "^8.8.2"
+    }
+}
