@@ -53,7 +53,7 @@ resource "aws_lambda_function" "validate_incoming_msg_header" {
   runtime = "nodejs16.x"
   handler = "index.handler"
 
-  source_code_hash = data.archive_file.validate_incoming_msg_header.output_base64sha256
+  source_code_hash = data.archive_file.lambda_validate_incoming_msg_header.output_base64sha256
 
   role = aws_iam_role.lambda_exec.arn
 }
