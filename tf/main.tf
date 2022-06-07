@@ -84,7 +84,7 @@ data "archive_file" "lambda_validate_incoming_msg_header" {
   output_path = "../dist/validate-incoming-msg-header.zip"
 }
 
-data "archive_file" "lambda_validate_incoming_msg" {
+data "archive_file" "lambda_enrich_incoming_msg" {
   type = "zip"
 
   source_dir  = "../lib/lambda/enrich-incoming-msg"
