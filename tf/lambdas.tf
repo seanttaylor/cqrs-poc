@@ -89,7 +89,7 @@ resource "aws_cloudwatch_log_group" "enrich_incoming_msg" {
 ################## route_incoming_msg LAMBDA CONFIGURATION ###################
 
 resource "aws_lambda_function" "route_incoming_msg" {
-  function_name = "enrich-incoming-msg-${local.git_commit_sha}"
+  function_name = "route-incoming-msg-${local.git_commit_sha}"
 
   s3_bucket = aws_s3_bucket.lambda_bucket.id
   s3_key    = aws_s3_object.lambda_route_incoming_msg.key
