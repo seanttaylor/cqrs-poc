@@ -98,6 +98,13 @@ data "archive_file" "lambda_route_incoming_msg" {
   output_path = "../dist/route-incoming-msg.zip"
 }
 
+data "archive_file" "lambda_create_db_digest_record" {
+  type = "zip"
+
+  source_dir  = "../lib/lambda/create-db-digest-record"
+  output_path = "../dist/create-db-digest-record.zip"
+}
+
 resource "aws_s3_object" "lambda_hello_world" {
   bucket = aws_s3_bucket.lambda_bucket.id
 
@@ -132,6 +139,15 @@ resource "aws_s3_object" "lambda_route_incoming_msg" {
   source = data.archive_file.lambda_route_incoming_msg.output_path
 
   etag = filemd5(data.archive_file.lambda_route_incoming_msg.output_path)
+}
+
+resource "aws_s3_object" "lambda_create_db_digest_record" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+
+  key    = "create-db-digest-record.zip"
+  source = data.archive_file.lambda_create_db_digest_record.output_path
+
+  etag = filemd5(data.archive_file.lambda_create_db_digest_record.output_path)
 }
 
 ################## AWS API GATEWAY CONFIGURATION ###################
