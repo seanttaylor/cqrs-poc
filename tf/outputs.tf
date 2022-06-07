@@ -4,7 +4,7 @@ output "lambda_function_names" {
     hello_world = aws_lambda_function.hello_world.function_name
     validate_incoming_msg_header = aws_lambda_function.validate_incoming_msg_header.function_name
     enrich_incoming_msg = aws_lambda_function.enrich_incoming_msg.function_name
-    route_incoming_msg = aws_lambda_function.enrich_route_incoming_msg.function_name
+    route_incoming_msg = aws_lambda_function.route_incoming_msg.function_name
     create_db_digest_record = aws_lambda_function.create_db_digest_record.function_name
   }
 }
