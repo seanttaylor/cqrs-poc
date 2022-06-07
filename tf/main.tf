@@ -84,6 +84,13 @@ data "archive_file" "lambda_validate_incoming_msg_header" {
   output_path = "../dist/validate-incoming-msg-header.zip"
 }
 
+data "archive_file" "lambda_validate_incoming_msg" {
+  type = "zip"
+
+  source_dir  = "../lib/lambda/enrich-incoming-msg"
+  output_path = "../dist/enrich-incoming-msg.zip"
+}
+
 resource "aws_s3_object" "lambda_hello_world" {
   bucket = aws_s3_bucket.lambda_bucket.id
 
@@ -100,6 +107,15 @@ resource "aws_s3_object" "lambda_validate_incoming_msg_header" {
   source = data.archive_file.lambda_validate_incoming_msg_header.output_path
 
   etag = filemd5(data.archive_file.lambda_validate_incoming_msg_header.output_path)
+}
+
+resource "aws_s3_object" "lambda_enrich_incoming_msg" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+
+  key    = "enrich-incoming-msg-header.zip"
+  source = data.archive_file.lambda_enrich_incoming_msg.output_path
+
+  etag = filemd5(data.archive_file.lambda_enrich_incoming_msg.output_path)
 }
 
 ################## AWS API GATEWAY CONFIGURATION ###################
