@@ -111,7 +111,7 @@ resource "aws_cloudwatch_log_group" "route_incoming_msg" {
 ################## create_db_digest_record LAMBDA CONFIGURATION ###################
 
 resource "aws_lambda_function" "create_db_digest_record" {
-  function_name = "create-db-digest-record${local.git_commit_sha}"
+  function_name = "create-db-digest-record-${local.git_commit_sha}"
 
   s3_bucket = aws_s3_bucket.lambda_bucket.id
   s3_key    = aws_s3_object.lambda_create_db_digest_record.key
