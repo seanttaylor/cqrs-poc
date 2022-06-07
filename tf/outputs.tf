@@ -1,5 +1,5 @@
-output "lambda_hello_world_function_name" {
-  description = "Name of the Lambda function"
+output "lambda_function_names" {
+  description = "Name(s) of the lamba function(s)"
   value = {
     hello_world = aws_lambda_function.hello_world.function_name
     validate_incoming_msg_header = aws_lambda_function.validate_incoming_msg_header.function_name
