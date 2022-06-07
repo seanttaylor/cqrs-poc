@@ -57,7 +57,7 @@ locals {
 #}
 
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "${local.app_owner}.lambda.hello-world"
+  bucket = "${local.app_owner}.lambda"
 
   force_destroy = true
   tags = {
@@ -77,6 +77,13 @@ data "archive_file" "lambda_hello_world" {
   output_path = "../dist/hello-world.zip"
 }
 
+data "archive_file" "lambda_validate_incoming_msg_header" {
+  type = "zip"
+
+  source_dir  = "../lib/lambda/validate-incoming-msg-header"
+  output_path = "../dist/validate-incoming-msg-header.zip"
+}
+
 resource "aws_s3_object" "lambda_hello_world" {
   bucket = aws_s3_bucket.lambda_bucket.id
 
@@ -84,6 +91,15 @@ resource "aws_s3_object" "lambda_hello_world" {
   source = data.archive_file.lambda_hello_world.output_path
 
   etag = filemd5(data.archive_file.lambda_hello_world.output_path)
+}
+
+resource "aws_s3_object" "lambda_validate_incoming_msg_header" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+
+  key    = "validate-incoming-msg-header.zip"
+  source = data.archive_file.lambda_validate_incoming_msg_header.output_path
+
+  etag = filemd5(data.archive_file.lambda_validate_incoming_msg_header.output_path)
 }
 
 ################## AWS API GATEWAY CONFIGURATION ###################
