@@ -57,7 +57,7 @@ locals {
 #}
 
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "${local.app_owner}.lambda/ice-cream-pipeline"
+  bucket = "${local.app_owner}.lambda/ice-cream-pipeline/"
 
   force_destroy = true
   tags = {
