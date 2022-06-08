@@ -70,12 +70,6 @@ resource "aws_s3_bucket_acl" "lambda_bucket" {
   acl    = "private"
 }
 
-resource "aws_s3_object" "ice_cream_pipeline" {
-  bucket = aws_s3_bucket.lambda_bucket.id
-  key    = "${local.app_owner}.lambda/ice-cream-pipeline/"
-}
-
-
 data "archive_file" "lambda_hello_world" {
   type = "zip"
 
