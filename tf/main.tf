@@ -114,7 +114,7 @@ resource "aws_s3_object" "lambda_hello_world" {
 resource "aws_s3_object" "lambda_enrich_incoming_msg" {
   bucket = aws_s3_bucket.lambda_bucket.id
 
-  key    = "enrich-incoming-msg-header.zip"
+  key    = "ice-cream-pipeline/enrich-incoming-msg-header.zip"
   source = data.archive_file.lambda_enrich_incoming_msg.output_path
 
   etag = filemd5(data.archive_file.lambda_enrich_incoming_msg.output_path)
