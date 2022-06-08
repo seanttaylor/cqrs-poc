@@ -65,7 +65,7 @@ resource "aws_s3_bucket" "lambda_bucket" {
   }
 }
 
-resource "aws_s3_bucket_object" "ice_cream_pipeline" {
+resource "aws_s3_object" "ice_cream_pipeline" {
   bucket = aws_s3_bucket.lambda_bucket.id
   key    = "${local.app_owner}/lambdas/ice-cream-pipeline"
 }
