@@ -123,7 +123,7 @@ resource "aws_s3_object" "lambda_enrich_incoming_msg" {
 resource "aws_s3_object" "lambda_route_incoming_msg" {
   bucket = aws_s3_bucket.lambda_bucket.id
 
-  key    = "route-incoming-msg-header.zip"
+  key    = "ice-cream-pipeline/route-incoming-msg-header.zip"
   source = data.archive_file.lambda_route_incoming_msg.output_path
 
   etag = filemd5(data.archive_file.lambda_route_incoming_msg.output_path)
@@ -132,7 +132,7 @@ resource "aws_s3_object" "lambda_route_incoming_msg" {
 resource "aws_s3_object" "lambda_create_db_digest_record" {
   bucket = aws_s3_bucket.lambda_bucket.id
 
-  key    = "create-db-digest-record.zip"
+  key    = "ice-cream-pipeline/create-db-digest-record.zip"
   source = data.archive_file.lambda_create_db_digest_record.output_path
 
   etag = filemd5(data.archive_file.lambda_create_db_digest_record.output_path)
