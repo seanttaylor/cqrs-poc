@@ -8,7 +8,7 @@ data "archive_file" "lambda_validate_incoming_msg_header" {
 resource "aws_s3_object" "lambda_validate_incoming_msg_header" {
   bucket = aws_s3_bucket.lambda_bucket.id
 
-  key    = "${local.app_owner}.lambda/ice-cream-pipeline/validate-incoming-msg-header.zip"
+  key    = "ice-cream-pipeline/validate-incoming-msg-header.zip"
   source = data.archive_file.lambda_validate_incoming_msg_header.output_path
 
   etag = filemd5(data.archive_file.lambda_validate_incoming_msg_header.output_path)
