@@ -1,5 +1,11 @@
 {
     "features": {
         "terraform": "latest"
-    }
+    },
+    "name": "Node.js",
+	"build": {
+		"dockerfile": "Dockerfile",
+		// Update 'VARIANT' to pick a Node version: 12, 14, 16
+		"args": { "VARIANT": "16" }
+	}
 }
