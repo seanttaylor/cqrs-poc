@@ -73,31 +73,29 @@ resource "aws_s3_bucket_acl" "lambda_bucket" {
 data "archive_file" "lambda_hello_world" {
   type = "zip"
 
-  source_dir  = "../lib/lambda/hello-world"
-  output_path = "../dist/hello-world.zip"
+  source_dir  = "../../lib/lambda/hello-world"
+  output_path = "../../dist/hello-world.zip"
 }
-
-
 
 data "archive_file" "lambda_enrich_incoming_msg" {
   type = "zip"
 
-  source_dir  = "../lib/lambda/enrich-incoming-msg"
-  output_path = "../dist/enrich-incoming-msg.zip"
+  source_dir  = "../../lib/lambda/enrich-incoming-msg"
+  output_path = "../../dist/enrich-incoming-msg.zip"
 }
 
 data "archive_file" "lambda_route_incoming_msg" {
   type = "zip"
 
-  source_dir  = "../lib/lambda/route-incoming-msg"
-  output_path = "../dist/route-incoming-msg.zip"
+  source_dir  = "../../lib/lambda/route-incoming-msg"
+  output_path = "../../dist/route-incoming-msg.zip"
 }
 
 data "archive_file" "lambda_create_db_digest_record" {
   type = "zip"
 
-  source_dir  = "../lib/lambda/create-db-digest-record"
-  output_path = "../dist/create-db-digest-record.zip"
+  source_dir  = "../../lib/lambda/create-db-digest-record"
+  output_path = "../../dist/create-db-digest-record.zip"
 }
 
 resource "aws_s3_object" "lambda_hello_world" {
@@ -108,8 +106,6 @@ resource "aws_s3_object" "lambda_hello_world" {
 
   etag = filemd5(data.archive_file.lambda_hello_world.output_path)
 }
-
-
 
 resource "aws_s3_object" "lambda_enrich_incoming_msg" {
   bucket = aws_s3_bucket.lambda_bucket.id

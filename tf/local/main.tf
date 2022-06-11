@@ -7,18 +7,21 @@ provider "aws" {
   access_key                  = "mock_access_key"
   secret_key                  = "mock_secret_key"
   region                      = "us-east-1"
-  s3_use_path_style           = true
+  s3_use_path_style           = true  # Required for LocalStack 
   skip_credentials_validation = true
   skip_metadata_api_check     = true
   skip_requesting_account_id  = true
 
   endpoints {
-    s3     = "http://0.0.0.0:4566"
+    s3     = local.localstack_edge_port
+    lambda = local.localstack_edge_port
+    iam    = local.localstack_edge_port
   }
 }
 
 locals {
   app_owner = "com.omegalabs.platform"
+  localstack_edge_port = "http://0.0.0.0:4566"
 }
 
 
@@ -29,4 +32,51 @@ resource "aws_s3_bucket" "lambda_bucket" {
   tags = {
     "app_owner" = "${local.app_owner}"
   }
+}
+
+data "archive_file" "lambda_hello_world" {
+  type = "zip"
+
+  source_dir  = "../../lib/lambda/hello-world"
+  output_path = "../../dist/hello-world.zip"
+}
+
+resource "aws_s3_object" "lambda_hello_world" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+
+  key    = "hello-world.zip"
+  source = data.archive_file.lambda_hello_world.output_path
+
+  etag = filemd5(data.archive_file.lambda_hello_world.output_path)
+}
+
+resource "aws_lambda_function" "hello_world" {
+  function_name = "hello-world"
+
+  s3_bucket = aws_s3_bucket.lambda_bucket.id
+  s3_key    = aws_s3_object.lambda_hello_world.key
+
+  runtime = "nodejs16.x"
+  handler = "index.handler"
+
+  source_code_hash = data.archive_file.lambda_hello_world.output_base64sha256
+
+  role = aws_iam_role.lambda_exec.arn
+}
+
+resource "aws_iam_role" "lambda_exec" {
+  name = "serverless_lambda"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Sid    = ""
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+      }
+    ]
+  })
 }
