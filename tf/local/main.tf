@@ -13,10 +13,17 @@ provider "aws" {
   skip_requesting_account_id  = true
 
   endpoints {
+    secretsmanager = local.localstack_edge_port
     s3     = local.localstack_edge_port
     lambda = local.localstack_edge_port
     iam    = local.localstack_edge_port
   }
+}
+
+variable "MY_KAFKA_BOOTSTRAP_SERVERS" {
+  type        = string
+  description = "Comma-separated list of self-managed Kafka bootstrap servers"
+  default     = ""
 }
 
 locals {
@@ -79,4 +86,27 @@ resource "aws_iam_role" "lambda_exec" {
       }
     ]
   })
+}
+
+resource "aws_secretsmanager_secret" "lambda_trigger" {
+  name = "lambda-secret"
+}
+
+resource "aws_lambda_event_source_mapping" "example" {
+  function_name     = aws_lambda_function.hello_world.arn
+  topics            = ["hello_world"]
+  starting_position = "TRIM_HORIZON"
+
+  self_managed_event_source {
+    endpoints = {
+      KAFKA_BOOTSTRAP_SERVERS = "kafka:9092"
+    }
+  }
+
+  source_access_configuration {
+    # See https://github.com/localstack/localstack/issues/6121#issuecomment-1134250573
+    type = "SASL_SCRAM_512_AUTH"
+    uri = aws_secretsmanager_secret.lambda_trigger.arn
+  }
+
 }
