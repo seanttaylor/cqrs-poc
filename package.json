@@ -1,0 +1,17 @@
+{
+    "name": "edge-service",
+    "type": "module",
+    "description": "Adds new items to the ingress pipe",
+    "version": "0.0.1",
+    "main": "index.js",
+    "author": "Sean Travis Taylor",
+    "license": "ISC",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "figlet": "^1.5.2",
+        "kafkajs": "^2.0.2",
+        "rxjs": "^7.5.5"
+    }
+}
