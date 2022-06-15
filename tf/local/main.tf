@@ -17,12 +17,26 @@ provider "aws" {
     s3     = local.localstack_edge_port
     lambda = local.localstack_edge_port
     iam    = local.localstack_edge_port
+    logs   = local.localstack_edge_port
+    cloudwatch = local.localstack_edge_port
   }
 }
 
 variable "MY_KAFKA_BOOTSTRAP_SERVERS" {
   type        = string
   description = "Comma-separated list of self-managed Kafka bootstrap servers"
+  default     = "kafka:9092"
+}
+
+variable "MY_KAFKA_CLUSTER_API_KEY" {
+  type        = string
+  description = "API key a Kafka cluster, alias for`username` in the Basic Auth authentication scheme"
+  default     = ""
+}
+
+variable "MY_KAFKA_CLUSTER_SECRET" {
+  type        = string
+  description = "Secret for a Kafka cluster, alias for`password` in the Basic Auth authentication scheme"
   default     = ""
 }
 
@@ -71,6 +85,12 @@ resource "aws_lambda_function" "hello_world" {
   role = aws_iam_role.lambda_exec.arn
 }
 
+resource "aws_cloudwatch_log_group" "hello_world" {
+  name = "/aws/lambda/${aws_lambda_function.hello_world.function_name}"
+
+  retention_in_days = 30
+}
+
 resource "aws_iam_role" "lambda_exec" {
   name = "serverless_lambda"
 
@@ -88,8 +108,13 @@ resource "aws_iam_role" "lambda_exec" {
   })
 }
 
-resource "aws_secretsmanager_secret" "lambda_trigger" {
+resource "aws_secretsmanager_secret" "lambda_event_source" {
   name = "lambda-secret"
+}
+
+resource "aws_secretsmanager_secret_version" "kafka_auth" {
+  secret_id     = aws_secretsmanager_secret.lambda_event_source.id
+  secret_string = jsonencode({"username": "${var.MY_KAFKA_CLUSTER_API_KEY}", "password": "${var.MY_KAFKA_CLUSTER_SECRET}"})
 }
 
 resource "aws_lambda_event_source_mapping" "example" {
@@ -105,8 +130,8 @@ resource "aws_lambda_event_source_mapping" "example" {
 
   source_access_configuration {
     # See https://github.com/localstack/localstack/issues/6121#issuecomment-1134250573
-    type = "SASL_SCRAM_512_AUTH"
-    uri = aws_secretsmanager_secret.lambda_trigger.arn
+    type = "BASIC_AUTH"
+    uri = aws_secretsmanager_secret.lambda_event_source.arn
   }
 
 }

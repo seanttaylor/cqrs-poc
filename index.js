@@ -1,16 +1,17 @@
-import { promisify } from "util";
-import { Kafka } from "kafkajs";
-import { of, map, interval, zip } from "rxjs";
-import figlet from "figlet";
+import { promisify } from 'util';
+import { Kafka } from 'kafkajs';
+import { Observable } from 'rxjs';
+import figlet from 'figlet';
 
 const KAFKA_BOOTSTRAP_SERVER = process.env.KAFKA_BOOTSTRAP_SERVER;
 
 const figletize = promisify(figlet);
 const myKafkaService = KafkaStreamService(KAFKA_BOOTSTRAP_SERVER);
-const myIceCreamServiceClient = IceCreamServiceClient({console, streamService: myKafkaService});
+const softServe = IceCreamServiceClient({console, streamService: myKafkaService});
 
 /*** MAIN ***/
-IceCreamService(myIceCreamServiceClient);
+IceCreamService(softServe);
+
 
 /**
  * 
@@ -20,14 +21,20 @@ IceCreamService(myIceCreamServiceClient);
  */
 function IceCreamServiceClient({console, streamService }) {
 
+  /**
+   * Initializes the streaming service; connects producer to Kafka broker
+   * @returns {Object} - an object having the RxJS Observer interface
+   */
   async function init() {
-    const banner = await figletize("soft-serve v.0.0.1");
-    console.log(banner);
-    /*try {
-      await streamService.connect();
+    const banner = await figletize('soft-serve v.0.0.1');
+    try {
+      await streamService.init();
+      await streamService.producer.init();
+
+      console.log(banner);
     } catch(e) {
       console.error(`IceCreamServiceClientError: ${e.message}`);
-    }*/
+    }
 
     return {
       next,
@@ -40,8 +47,12 @@ function IceCreamServiceClient({console, streamService }) {
    * 
    * @param {Object} message - an event message to push onto the Ice Cream pipeline 
    */
-  function next(message) {
-    console.log(message)
+  async function next(message) {
+    try {
+      await streamService.producer.send(message);
+    } catch(e) {
+      console.error(`IceCreamServiceClientError: ${e.message}`);
+    }
   }
 
   function complete() {
@@ -52,7 +63,7 @@ function IceCreamServiceClient({console, streamService }) {
     console.error(e);
   }
 
-  return {init}
+  return { init }
 }
 
 /**
@@ -60,18 +71,51 @@ function IceCreamServiceClient({console, streamService }) {
  * @param {String} BOOTSTRAP_SERVER - the address of the Kafka bootstrap server
  */
 function KafkaStreamService(BOOTSTRAP_SERVER) {
+  let producer;
   let consumer;
 
-  async function connect() {
+  async function init() {
 
     const kafka = new Kafka({
-      clientId: 'ice_cream.edge_service',
+      clientId: 'ice_cream_service',
       brokers: [`${BOOTSTRAP_SERVER}`],
     });
     consumer = kafka.consumer({ groupId: 'ice_cream' });
-    await consumer.connect();
+    producer = kafka.producer();
+    
   };
 
+  /**
+   * Initializes the consumer for subscriptions; connects consumer to Kafka broker
+   */
+  async function initConsumer() {
+    await consumer.connect();
+  }
+
+  /**
+   * Initializes the producer for generating messages; connects producer to Kafka broker
+   * 
+   */ 
+  async function initProducer() {
+    await producer.connect();
+  }
+
+  /**
+   * Sends a message to the stream
+   * @param {String} myMessage - message to add to the stream
+   */
+  async function producerSendMessage(myMessage) {
+    await producer.send({
+      topic: 'hello_world',
+      messages: [ {key: 'key1', value: JSON.stringify(myMessage) }],
+    });
+  }
+
+  /**
+   * 
+   * @param {String} topic - stream topic to subscribe to
+   * @param {Function} onMessageFn - a callback function to execute on receipt of new messages 
+   */
   async function subscribe({ topic, onMessageFn }) {
     if (typeof (onMessageFn) !== 'function') {
       throw Error(`StreamService.BadRequest => onMessage must be of type function, not (${typeof onMessageFn})`);
@@ -82,7 +126,17 @@ function KafkaStreamService(BOOTSTRAP_SERVER) {
     });
   };
 
-  return { connect, subscribe}
+  return { 
+    init, 
+    consumer: {
+      init: initConsumer,
+      subscribe,  
+    },
+    producer: {
+      init: initProducer,
+      send: producerSendMessage
+    },
+  }
 }
 
 /**
@@ -150,12 +204,10 @@ async function IceCreamService(client) {
       "productId": "646"
     }
   };
-  const myInterval$ = interval(1000);
   
-  zip(myInterval$)
-  .pipe(
-    map(() => sampleMessage)
-  ).subscribe(myClient);
+  const iceCream$ = new Observable((subscriber) => {
+    const myInterval = setInterval(()=> subscriber.next(sampleMessage), 1000);
+  }).subscribe(myClient);
 };
 
 

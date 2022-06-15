@@ -12,21 +12,28 @@ services:
       - "127.0.0.1:4510-4559:4510-4559"  # external service port range
       - "127.0.0.1:4566:4566"            # LocalStack Edge Proxy
     environment:
-      - SERVICES=iam,lambda,logs,s3,secretsmanager
+      - SERVICES=cloudwatch,iam,lambda,logs,s3,secretsmanager
       - DEBUG=${DEBUG-}
       - DATA_DIR=${DATA_DIR-}
-      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR-}
+      - LAMBDA_EXECUTOR=local
       - LOCALSTACK_API_KEY=${LOCALSTACK_API_KEY-}  # only required for Pro
-      - HOST_TMP_FOLDER=${TMPDIR:-/tmp/}localstack
+      - HOST_TMP_FOLDER=/tmp/localstack
       - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
-      - "${TMPDIR:-/tmp}/localstack:/tmp/localstack"
+      - "/tmp/localstack:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
+  edge-service:
+    container_name: "edge-service"
+    image: edge_service:0.0.1
+    environment:
+    - KAFKA_BOOTSTRAP_SERVER=kafka:9092
+    depends_on:
+      - kafka
   zookeeper:
     container_name: zookeeper
     image: wurstmeister/zookeeper
     ports:
-      - 2181:2181
+     - 2181:2181
   #  networks:
   #    - shared_network
   kafka:

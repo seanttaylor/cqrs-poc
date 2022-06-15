@@ -105,4 +105,3 @@ dist
 
 # Terraform
 .terraform/
-terraform.log
