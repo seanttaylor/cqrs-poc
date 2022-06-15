@@ -105,3 +105,7 @@ dist
 
 # Terraform
 .terraform/
+.terraform.lock.hcl
+terraform.log
+terraform.tfstate
+terraform.tfstate.backup
