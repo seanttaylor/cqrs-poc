@@ -121,20 +121,11 @@ resource "aws_iam_role" "lambda_exec" {
       }
     ]
   })
-
-  inline_policy {
-     policy = data.aws_iam_policy_document.lambda_exec.json
-  }
 }
 
-data "aws_iam_policy_document" "lambda_exec" {
-  statement {
-    actions = [
-      "secretsmanager:GetSecretValue"
-    ]
-    effect = "Allow"
-    resources = ["*"]
-  }
+resource "aws_iam_role_policy_attachment" "secrets_manager_rw_policy" {
+  role = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
 }
 
 resource "aws_secretsmanager_secret" "lambda_event_source" {
