@@ -114,7 +114,8 @@ resource "aws_iam_role" "lambda_exec" {
     Statement = [{
       Action = [
         "sts:AssumeRole",
-        "secretsmanager:GetSecretValue"
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:ListSecretVersionIds"
       ]
       Effect = "Allow"
       Sid    = ""
