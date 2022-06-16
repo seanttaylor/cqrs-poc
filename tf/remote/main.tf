@@ -112,14 +112,7 @@ resource "aws_iam_role" "lambda_exec" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Action = [
-        "sts:AssumeRole",
-        "secretsmanager:GetSecretValue",
-        "secretsmanager:ListSecretVersionIds"
-      ]
-      Resource = [
-        "${aws_secretsmanager_secret.lambda_event_source.arn}"
-      ]
+      Action = "sts:AssumeRole"
       Effect = "Allow"
       Sid    = ""
       Principal = {
@@ -128,6 +121,20 @@ resource "aws_iam_role" "lambda_exec" {
       }
     ]
   })
+
+  inline_policy {
+     policy = data.aws_iam_policy_document.lambda_exec.json
+  }
+}
+
+data "aws_iam_policy_document" "lambda_exec" {
+  statement {
+    actions = [
+      "secretsmanager:GetSecretValue"
+    ]
+    effect = "Allow"
+    resources = ["*"]
+  }
 }
 
 resource "aws_secretsmanager_secret" "lambda_event_source" {
