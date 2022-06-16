@@ -126,6 +126,11 @@ resource "aws_iam_role_policy_attachment" "secrets_manager_rw_policy" {
   policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
 }
 
+resource "aws_iam_role_policy_attachment" "basic_exec_policy" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
 resource "aws_secretsmanager_secret" "lambda_event_source" {
   name = "lambda-secret"
 }

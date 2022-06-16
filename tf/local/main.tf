@@ -47,12 +47,17 @@ locals {
 
 
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "lambda-bucket"
+  bucket = "${local.app_owner}.softserve"
 
   force_destroy = true
   tags = {
     "app_owner" = "${local.app_owner}"
   }
+}
+
+resource "aws_s3_bucket_acl" "lambda_bucket" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+  acl    = "private"
 }
 
 data "archive_file" "lambda_hello_world" {
@@ -108,14 +113,19 @@ resource "aws_iam_role" "lambda_exec" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "secrets_manager_rw_policy" {
+  role = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+}
+
 resource "aws_secretsmanager_secret" "lambda_event_source" {
   name = "lambda-secret"
 }
 
-#resource "aws_secretsmanager_secret_version" "kafka_auth" {
-#  secret_id     = aws_secretsmanager_secret.lambda_event_source.id
-#  secret_string = jsonencode({"username": "${var.MY_KAFKA_CLUSTER_API_KEY}", "password": "${var.MY_KAFKA_CLUSTER_SECRET}"})
-#}
+resource "aws_secretsmanager_secret_version" "kafka_auth" {
+  secret_id     = aws_secretsmanager_secret.lambda_event_source.id
+  secret_string = jsonencode({"username": "${var.MY_KAFKA_CLUSTER_API_KEY}", "password": "${var.MY_KAFKA_CLUSTER_SECRET}"})
+}
 
 resource "aws_lambda_event_source_mapping" "example" {
   function_name     = aws_lambda_function.hello_world.arn
@@ -124,7 +134,7 @@ resource "aws_lambda_event_source_mapping" "example" {
 
   self_managed_event_source {
     endpoints = {
-      KAFKA_BOOTSTRAP_SERVERS = "kafka:9092"
+      KAFKA_BOOTSTRAP_SERVERS = "${var.MY_KAFKA_BOOTSTRAP_SERVERS}"
     }
   }
 
@@ -133,5 +143,9 @@ resource "aws_lambda_event_source_mapping" "example" {
     type = "BASIC_AUTH"
     uri = aws_secretsmanager_secret.lambda_event_source.arn
   }
+
+  depends_on = [
+    aws_secretsmanager_secret.lambda_event_source
+  ]
 
 }
