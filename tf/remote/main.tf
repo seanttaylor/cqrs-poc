@@ -57,7 +57,7 @@ locals {
 }
 
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "lambda-bucket"
+  bucket = "${local.app_owner}.softserve"
 
   force_destroy = true
   tags = {
