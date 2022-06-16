@@ -117,6 +117,9 @@ resource "aws_iam_role" "lambda_exec" {
         "secretsmanager:GetSecretValue",
         "secretsmanager:ListSecretVersionIds"
       ]
+      Resource = [
+        "${aws_secretsmanager_secret.lambda_event_source.arn}"
+      ]
       Effect = "Allow"
       Sid    = ""
       Principal = {
