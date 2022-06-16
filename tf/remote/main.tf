@@ -34,30 +34,30 @@ provider "aws" {
   region                      = "us-east-1"
 }
 
-variable "TFC_CONFIGURATION_VERSION_GIT_BRANCH" {
-  type = string
-  default = ""
+variable "MY_KAFKA_BOOTSTRAP_SERVERS" {
+  type        = string
+  description = "Comma-separated list of self-managed Kafka bootstrap servers"
+  default     = ""
 }
 
-variable "TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA" {
-  type = string
-  default = ""
+variable "MY_KAFKA_CLUSTER_API_KEY" {
+  type        = string
+  description = "API key a Kafka cluster, alias for`username` in the Basic Auth authentication scheme"
+  default     = ""
+}
+
+variable "MY_KAFKA_CLUSTER_SECRET" {
+  type        = string
+  description = "Secret for a Kafka cluster, alias for`password` in the Basic Auth authentication scheme"
+  default     = ""
 }
 
 locals {
-  git_commit_sha = substr("${var.TFC_CONFIGURATION_VERSION_GIT_COMMIT_SHA}", -40, 6)
   app_owner = "com.omegalabs.platform"
 }
 
-################## AWS S3 BUCKET CONFIGURATION ###################
-
-#resource "random_pet" "lambda_bucket_name" {
-#  prefix = "hello-world"
-#  length = 4
-#}
-
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "${local.app_owner}"
+  bucket = "lambda-bucket"
 
   force_destroy = true
   tags = {
@@ -65,37 +65,11 @@ resource "aws_s3_bucket" "lambda_bucket" {
   }
 }
 
-resource "aws_s3_bucket_acl" "lambda_bucket" {
-  bucket = aws_s3_bucket.lambda_bucket.id
-  acl    = "private"
-}
-
 data "archive_file" "lambda_hello_world" {
   type = "zip"
 
   source_dir  = "../../lib/lambda/hello-world"
   output_path = "../../dist/hello-world.zip"
-}
-
-data "archive_file" "lambda_enrich_incoming_msg" {
-  type = "zip"
-
-  source_dir  = "../../lib/lambda/enrich-incoming-msg"
-  output_path = "../../dist/enrich-incoming-msg.zip"
-}
-
-data "archive_file" "lambda_route_incoming_msg" {
-  type = "zip"
-
-  source_dir  = "../../lib/lambda/route-incoming-msg"
-  output_path = "../../dist/route-incoming-msg.zip"
-}
-
-data "archive_file" "lambda_create_db_digest_record" {
-  type = "zip"
-
-  source_dir  = "../../lib/lambda/create-db-digest-record"
-  output_path = "../../dist/create-db-digest-record.zip"
 }
 
 resource "aws_s3_object" "lambda_hello_world" {
@@ -107,91 +81,67 @@ resource "aws_s3_object" "lambda_hello_world" {
   etag = filemd5(data.archive_file.lambda_hello_world.output_path)
 }
 
-resource "aws_s3_object" "lambda_enrich_incoming_msg" {
-  bucket = aws_s3_bucket.lambda_bucket.id
+resource "aws_lambda_function" "hello_world" {
+  function_name = "hello-world"
 
-  key    = "ice-cream-pipeline/enrich-incoming-msg-header.zip"
-  source = data.archive_file.lambda_enrich_incoming_msg.output_path
+  s3_bucket = aws_s3_bucket.lambda_bucket.id
+  s3_key    = aws_s3_object.lambda_hello_world.key
 
-  etag = filemd5(data.archive_file.lambda_enrich_incoming_msg.output_path)
+  runtime = "nodejs16.x"
+  handler = "index.handler"
+
+  source_code_hash = data.archive_file.lambda_hello_world.output_base64sha256
+
+  role = aws_iam_role.lambda_exec.arn
 }
 
-resource "aws_s3_object" "lambda_route_incoming_msg" {
-  bucket = aws_s3_bucket.lambda_bucket.id
-
-  key    = "ice-cream-pipeline/route-incoming-msg-header.zip"
-  source = data.archive_file.lambda_route_incoming_msg.output_path
-
-  etag = filemd5(data.archive_file.lambda_route_incoming_msg.output_path)
-}
-
-resource "aws_s3_object" "lambda_create_db_digest_record" {
-  bucket = aws_s3_bucket.lambda_bucket.id
-
-  key    = "ice-cream-pipeline/create-db-digest-record.zip"
-  source = data.archive_file.lambda_create_db_digest_record.output_path
-
-  etag = filemd5(data.archive_file.lambda_create_db_digest_record.output_path)
-}
-
-################## AWS API GATEWAY CONFIGURATION ###################
-
-resource "aws_apigatewayv2_api" "lambda" {
-  name          = "serverless_lambda_gw"
-  protocol_type = "HTTP"
-}
-
-resource "aws_apigatewayv2_stage" "lambda" {
-  api_id = aws_apigatewayv2_api.lambda.id
-
-  name        = "serverless_lambda_stage"
-  auto_deploy = true
-
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.api_gw.arn
-
-    format = jsonencode({
-      requestId               = "$context.requestId"
-      sourceIp                = "$context.identity.sourceIp"
-      requestTime             = "$context.requestTime"
-      protocol                = "$context.protocol"
-      httpMethod              = "$context.httpMethod"
-      resourcePath            = "$context.resourcePath"
-      routeKey                = "$context.routeKey"
-      status                  = "$context.status"
-      responseLength          = "$context.responseLength"
-      integrationErrorMessage = "$context.integrationErrorMessage"
-      }
-    )
-  }
-}
-
-resource "aws_apigatewayv2_integration" "hello_world" {
-  api_id = aws_apigatewayv2_api.lambda.id
-
-  integration_uri    = aws_lambda_function.hello_world.invoke_arn
-  integration_type   = "AWS_PROXY"
-  integration_method = "POST"
-}
-
-resource "aws_apigatewayv2_route" "hello_world" {
-  api_id = aws_apigatewayv2_api.lambda.id
-
-  route_key = "GET /hello"
-  target    = "integrations/${aws_apigatewayv2_integration.hello_world.id}"
-}
-
-resource "aws_cloudwatch_log_group" "api_gw" {
-  name = "/aws/api_gw/${aws_apigatewayv2_api.lambda.name}"
+resource "aws_cloudwatch_log_group" "hello_world" {
+  name = "/aws/lambda/${aws_lambda_function.hello_world.function_name}"
 
   retention_in_days = 30
 }
 
-resource "aws_lambda_permission" "api_gw" {
-  statement_id  = "AllowExecutionFromAPIGateway"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.hello_world.function_name
-  principal     = "apigateway.amazonaws.com"
+resource "aws_iam_role" "lambda_exec" {
+  name = "serverless_lambda"
 
-  source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/*/*"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Sid    = ""
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+      }
+    ]
+  })
+}
+
+resource "aws_secretsmanager_secret" "lambda_event_source" {
+  name = "lambda-secret"
+}
+
+resource "aws_secretsmanager_secret_version" "kafka_auth" {
+  secret_id     = aws_secretsmanager_secret.lambda_event_source.id
+  secret_string = jsonencode({"username": "${var.MY_KAFKA_CLUSTER_API_KEY}", "password": "${var.MY_KAFKA_CLUSTER_SECRET}"})
+}
+
+resource "aws_lambda_event_source_mapping" "example" {
+  function_name     = aws_lambda_function.hello_world.arn
+  topics            = ["hello_world"]
+  starting_position = "TRIM_HORIZON"
+
+  self_managed_event_source {
+    endpoints = {
+      KAFKA_BOOTSTRAP_SERVERS = "kafka:9092"
+    }
+  }
+
+  source_access_configuration {
+    # See https://github.com/localstack/localstack/issues/6121#issuecomment-1134250573
+    type = "BASIC_AUTH"
+    uri = aws_secretsmanager_secret.lambda_event_source.arn
+  }
+
 }

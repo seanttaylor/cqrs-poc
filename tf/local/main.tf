@@ -112,10 +112,10 @@ resource "aws_secretsmanager_secret" "lambda_event_source" {
   name = "lambda-secret"
 }
 
-resource "aws_secretsmanager_secret_version" "kafka_auth" {
-  secret_id     = aws_secretsmanager_secret.lambda_event_source.id
-  secret_string = jsonencode({"username": "${var.MY_KAFKA_CLUSTER_API_KEY}", "password": "${var.MY_KAFKA_CLUSTER_SECRET}"})
-}
+#resource "aws_secretsmanager_secret_version" "kafka_auth" {
+#  secret_id     = aws_secretsmanager_secret.lambda_event_source.id
+#  secret_string = jsonencode({"username": "${var.MY_KAFKA_CLUSTER_API_KEY}", "password": "${var.MY_KAFKA_CLUSTER_SECRET}"})
+#}
 
 resource "aws_lambda_event_source_mapping" "example" {
   function_name     = aws_lambda_function.hello_world.arn
