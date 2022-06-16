@@ -1,5 +1,3 @@
-# See https://learn.hashicorp.com/tutorials/terraform/lambda-api-gateway?in=terraform/aws for details about this configuration.
-
 ################## TERRAFORM CONFIGURATION ###################
 
 variable "access_key" {
@@ -42,7 +40,7 @@ variable "MY_KAFKA_BOOTSTRAP_SERVERS" {
 
 variable "MY_KAFKA_CLUSTER_API_KEY" {
   type        = string
-  description = "API key a Kafka cluster, alias for`username` in the Basic Auth authentication scheme"
+  description = "API key for a Kafka cluster, alias for`username` in the Basic Auth authentication scheme"
   default     = ""
 }
 
@@ -144,7 +142,7 @@ resource "aws_lambda_event_source_mapping" "example" {
 
   self_managed_event_source {
     endpoints = {
-      KAFKA_BOOTSTRAP_SERVERS = "kafka:9092"
+      KAFKA_BOOTSTRAP_SERVERS = "${var.MY_KAFKA_BOOTSTRAP_SERVERS}"
     }
   }
 
