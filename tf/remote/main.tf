@@ -149,4 +149,8 @@ resource "aws_lambda_event_source_mapping" "example" {
     uri = aws_secretsmanager_secret.lambda_event_source.arn
   }
 
+  depends_on = [
+    aws_secretsmanager_secret.lambda_event_source
+  ]
+
 }
