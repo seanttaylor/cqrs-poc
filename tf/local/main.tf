@@ -13,12 +13,13 @@ provider "aws" {
   skip_requesting_account_id  = true
 
   endpoints {
-    secretsmanager = local.localstack_edge_port
-    s3     = local.localstack_edge_port
-    lambda = local.localstack_edge_port
-    iam    = local.localstack_edge_port
-    logs   = local.localstack_edge_port
     cloudwatch = local.localstack_edge_port
+    iam    = local.localstack_edge_port
+    lambda = local.localstack_edge_port
+    logs   = local.localstack_edge_port
+    s3     = local.localstack_edge_port
+    sqs    = local.localstack_edge_port
+    secretsmanager = local.localstack_edge_port
   }
 }
 
@@ -113,39 +114,52 @@ resource "aws_iam_role" "lambda_exec" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "secrets_manager_rw_policy" {
-  role = aws_iam_role.lambda_exec.name
-  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+resource "aws_sqs_queue" "hello_world" {
+  name = "hello_world"
 }
 
-resource "aws_secretsmanager_secret" "lambda_event_source" {
-  name = "lambda-secret"
-}
-
-resource "aws_secretsmanager_secret_version" "kafka_auth" {
-  secret_id     = aws_secretsmanager_secret.lambda_event_source.id
-  secret_string = jsonencode({"username": "${var.MY_KAFKA_CLUSTER_API_KEY}", "password": "${var.MY_KAFKA_CLUSTER_SECRET}"})
+resource "aws_iam_role_policy_attachment" "basic_exec_policy" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_lambda_event_source_mapping" "example" {
-  function_name     = aws_lambda_function.hello_world.arn
-  topics            = ["hello_world"]
-  starting_position = "TRIM_HORIZON"
-
-  self_managed_event_source {
-    endpoints = {
-      KAFKA_BOOTSTRAP_SERVERS = "${var.MY_KAFKA_BOOTSTRAP_SERVERS}"
-    }
-  }
-
-  source_access_configuration {
-    # See https://github.com/localstack/localstack/issues/6121#issuecomment-1134250573
-    type = "BASIC_AUTH"
-    uri = aws_secretsmanager_secret.lambda_event_source.arn
-  }
-
-  depends_on = [
-    aws_secretsmanager_secret.lambda_event_source
-  ]
-
+  event_source_arn = aws_sqs_queue.hello_world.arn
+  function_name    = aws_lambda_function.hello_world.arn
 }
+
+#resource "aws_iam_role_policy_attachment" "secrets_manager_rw_policy" {
+#  role = aws_iam_role.lambda_exec.name
+#  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+#}
+
+#resource "aws_secretsmanager_secret" "lambda_event_source" {
+#  name = "lambda-secret"
+#}
+
+#resource "aws_secretsmanager_secret_version" "kafka_auth" {
+#  secret_id     = aws_secretsmanager_secret.lambda_event_source.id
+#  secret_string = jsonencode({"username": "${var.MY_KAFKA_CLUSTER_API_KEY}", "password": "${var.MY_KAFKA_CLUSTER_SECRET}"})
+#}
+
+#resource "aws_lambda_event_source_mapping" "example" {
+#  function_name     = aws_lambda_function.hello_world.arn
+#  topics            = ["hello_world"]
+#  starting_position = "TRIM_HORIZON"
+#
+#  self_managed_event_source {
+#    endpoints = {
+#      KAFKA_BOOTSTRAP_SERVERS = "${var.MY_KAFKA_BOOTSTRAP_SERVERS}"
+#    }
+#  }
+
+#  source_access_configuration {
+#    # See https://github.com/localstack/localstack/issues/6121#issuecomment-1134250573
+#    type = "BASIC_AUTH"
+#    uri = aws_secretsmanager_secret.lambda_event_source.arn
+#  }
+
+#  depends_on = [
+#    aws_secretsmanager_secret.lambda_event_source
+#  ]
+#}

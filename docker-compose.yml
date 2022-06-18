@@ -22,20 +22,19 @@ services:
     volumes:
       - "/tmp/localstack:/tmp/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
-  edge-service:
-    container_name: "edge-service"
-    image: edge_service:0.0.1
+  edge_service:
+    container_name: "edge_service"
+    image: edge_service:0.0.2
     environment:
-    - KAFKA_BOOTSTRAP_SERVER=kafka:9092
+      - KAFKA_BOOTSTRAP_SERVER=kafka:9092
+      - KAFKA_CLIENT_ID=softserve
     depends_on:
       - kafka
   zookeeper:
     container_name: zookeeper
     image: wurstmeister/zookeeper
     ports:
-     - 2181:2181
-  #  networks:
-  #    - shared_network
+      - 2181:2181
   kafka:
     container_name: kafka
     image: wurstmeister/kafka
@@ -47,8 +46,6 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_CREATE_TOPICS: "hello_world:1:1"    
-  # networks:
-  #   - shared_network
   kowl:
     image: quay.io/cloudhut/kowl:v1.3.1
     container_name: kowl

@@ -2,6 +2,8 @@ FROM node:16-alpine
 
 RUN mkdir /src
 
+COPY ./lib /src/lib
+COPY ./interfaces /src/interfaces
 COPY ./index.js /src
 COPY ./package.json /src
 COPY ./package-lock.json /src
