@@ -14,7 +14,7 @@
 
  function StreamingDatasource(myImpl) {
     if (!(this instanceof StreamingDatasource)) {
-        return new StreamingDatasource(myImpl); 
+      return new StreamingDatasource(myImpl); 
     }
 
     function required() {

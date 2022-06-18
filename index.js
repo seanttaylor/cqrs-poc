@@ -3,13 +3,15 @@ import { Observable } from 'rxjs';
 import figlet from 'figlet';
 import StreamingDatasource from './interfaces/streaming-data-source.js';
 import KafkaStreamingDatasource from './lib/kafka/index.js';
+import SQSStreamingDatasource from './lib/sqs/index.js';
 
 const KAFKA_BOOTSTRAP_SERVER = process.env.KAFKA_BOOTSTRAP_SERVER;
 const CLIENT_ID = process.env.KAFKA_CLIENT_ID;
 
 const figletize = promisify(figlet);
-const myKafka = StreamingDatasource(KafkaStreamingDatasource({BOOTSTRAP_SERVER: KAFKA_BOOTSTRAP_SERVER, CLIENT_ID }));
-const softServe = IceCreamServiceClient({console, streamService: myKafka});
+//const myKafka = StreamingDatasource(KafkaStreamingDatasource({BOOTSTRAP_SERVER: KAFKA_BOOTSTRAP_SERVER, CLIENT_ID }));
+const mySQS = StreamingDatasource(SQSStreamingDatasource());
+const softServe = IceCreamServiceClient({ console, streamService: mySQS });
 
 /*** MAIN ***/
 IceCreamService(softServe);
@@ -30,7 +32,7 @@ function IceCreamServiceClient({console, streamService }) {
   async function init() {
     const banner = await figletize('soft-serve v.0.0.2');
     try {
-      await streamService.init({groupId: 'softserve'});
+      await streamService.init('hello_world');
 
       console.log(banner);
     } catch(e) {

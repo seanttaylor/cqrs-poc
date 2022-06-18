@@ -18,8 +18,9 @@ provider "aws" {
     lambda = local.localstack_edge_port
     logs   = local.localstack_edge_port
     s3     = local.localstack_edge_port
-    sqs    = local.localstack_edge_port
     secretsmanager = local.localstack_edge_port
+    sqs    = local.localstack_edge_port
+    ssm = local.localstack_edge_port
   }
 }
 
@@ -126,6 +127,17 @@ resource "aws_iam_role_policy_attachment" "basic_exec_policy" {
 resource "aws_lambda_event_source_mapping" "example" {
   event_source_arn = aws_sqs_queue.hello_world.arn
   function_name    = aws_lambda_function.hello_world.arn
+}
+
+resource "aws_ssm_parameter" "hello_world_url" {
+  name        = "/dev/platform/sqs/hello_world"
+  description = "Connection URL for the hello_world SQS queue"
+  type        = "String"
+  value       = aws_sqs_queue.hello_world.id
+
+  tags = {
+    environment = "development"
+  }
 }
 
 #resource "aws_iam_role_policy_attachment" "secrets_manager_rw_policy" {

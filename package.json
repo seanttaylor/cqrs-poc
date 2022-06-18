@@ -10,6 +10,8 @@
         "start": "node index.js"
     },
     "dependencies": {
+        "@aws-sdk/client-sqs": "^3.112.0",
+        "@aws-sdk/client-ssm": "^3.112.0",
         "figlet": "^1.5.2",
         "kafkajs": "^2.0.2",
         "rxjs": "^7.5.5"
